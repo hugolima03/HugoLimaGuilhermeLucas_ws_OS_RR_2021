@@ -84,7 +84,7 @@ int getRes(int pID, int request[])
     printf("O número de recursos solicitados é mais do que o necessário.\n");
     return -1;
   }
-  printf(" Os recursos estão sendo alocados...\n");
+  printf("Os recursos estão sendo alocados...\n");
 
   if (enoughtoalloccase(request) == -1)
   {
@@ -102,13 +102,13 @@ int getRes(int pID, int request[])
 
   if (safemodecase() == 0)
   {
-    printf("\nx========================x\n|Estado seguro ✔️. Recursos Alocados|\nx=========================x\n");
+    printf("Estado seguro ✅ Recursos Alocados.\n");
     exit(1);
     return 0;
   }
   else
   {
-    printf("\nx=====================x\n|Estado inseguro.          |\nx=====================x\n");
+    printf("Estado inseguro.\n");
     exit(1);
     return -1;
   }
