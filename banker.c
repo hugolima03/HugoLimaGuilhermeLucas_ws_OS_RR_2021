@@ -21,6 +21,8 @@ int allocmatrix[N][M];
 int MaxMatrix[N][M];
 int NeedMatrix[N][M];
 
+// Thread
+
 void *procs(void *procsID)
 {
   int pID = *(int *)procsID;
@@ -108,7 +110,7 @@ int getRes(int pID, int request[])
   }
   else
   {
-    printf("Estado inseguro.\n");
+    printf("Estado inseguro❗.\n");
     exit(1);
     return -1;
   }
@@ -131,11 +133,11 @@ int relRes(int pID, int releaseVector[])
   printf("Released.\nMetrix Available:\n");
   showavail();
   printf("Metrix Allocated:\n");
-  Showalloc();
-  printf("Metrix Need:\n");
-  ShowNeed();
+  showalloc();
   return 0;
 }
+
+// Funções para validação dos recursos
 
 int caseengoughtorel(int pID, int releaseVector[])
 {
@@ -187,21 +189,9 @@ int enoughtoalloccase(int request[])
   return 0;
 }
 
-void ShowNeed()
-{
-  for (i = 0; i < N; ++i)
-  {
-    printf("{ ");
-    for (j = 0; j < M; ++j)
-    {
-      printf("%d, ", NeedMatrix[i][j]);
-    }
-    printf("}\n");
-  }
-  return;
-}
+// Funções de output
 
-void Showalloc()
+void showalloc()
 {
   for (i = 0; i < N; ++i)
   {
@@ -234,6 +224,8 @@ void printReqOrRelVector(int vec[])
   printf("\n");
   return;
 }
+
+// Função para verificação de estado
 
 int safemodecase()
 {
@@ -301,7 +293,7 @@ int safemodecase()
 
 int main()
 {
-  printf("Enter available VECTOR\n");
+  printf("Digite o vetor de recursos disponíveis\n");
 
   for (i = 0; i < M; i++)
   {
@@ -309,7 +301,8 @@ int main()
     scanf("%d", &init[i]);
     avail[i] = init[i];
   }
-  printf("Enter Allocation Matrix\n");
+
+  printf("Insira a matriz de alocação\n");
   for (i = 0; i < N; i++)
   {
 
@@ -319,7 +312,7 @@ int main()
       scanf("%d", &allocmatrix[i][j]);
     }
   }
-  printf("Enter MAX Matrix\n");
+  printf("Insira a matriz máxima\n");
   for (i = 0; i < N; i++)
   {
 
@@ -343,10 +336,7 @@ int main()
   showavail();
 
   printf("Matriz de alocação:\n");
-  Showalloc();
-
-  printf("Need Matrix is:\n");
-  ShowNeed();
+  showalloc();
 
   pthread_mutex_init(&mutex, NULL);
   pthread_attr_t attrDefault;
