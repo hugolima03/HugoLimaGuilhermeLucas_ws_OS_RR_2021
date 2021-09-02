@@ -9,8 +9,8 @@
 #include <pthread.h>
 
 //global variables delaration;
-#define M 2 //no of resources
-#define N 2 //no of processoses
+#define M 4 //no of resources
+#define N 5 //no of processoses
 
 int i = 0;
 int j = 0;

@@ -1,30 +1,22 @@
-// Sistemas Operacionais - UFRR 2021.1
-// Algoritmo do banqueiro, evitando deadlocks em tempo de execução
-
-// Para compilar:
-// gcc -pthread banker.c -o banker
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 
-//global variables delaration;
-#define M 2 //no of resources
-#define N 2 //no of processoses
+#define M 2 // numero de recursos
+#define N 2 // numero de processos
 
+// Variáveis globais
 int i = 0;
 int j = 0;
 pthread_mutex_t mutex;
-int init[M];
 
+// Matrizes e vetores do algoritmo
 int avail[M];
-
 int allocmatrix[N][M];
 int MaxMatrix[N][M];
 int NeedMatrix[N][M];
 
 // Thread
-
 void *procs(void *procsID)
 {
   int pID = *(int *)procsID;
@@ -42,7 +34,6 @@ void *procs(void *procsID)
       if (NeedMatrix[pID][i] != 0)
       {
         request[i] = rand() % NeedMatrix[pID][i];
-        printf("request[i] %d\n", request[i]);
       }
       else
       {
@@ -50,8 +41,7 @@ void *procs(void *procsID)
       }
     }
 
-    // print request ou release vector
-    // printReqOrRelVector(request);
+    printReqOrRelVector(request);
 
     getRes(pID, request);
 
@@ -83,48 +73,50 @@ void *procs(void *procsID)
   }
 }
 
-// get isSafe? response
 int getRes(int pID, int request[])
 {
   if (casegreaterthanneed(pID, request) == -1)
   {
-    printf("O número de recursos solicitados é mais do que o necessário.\n");
+    printf("Number of requested Resources is more than Needed.\n");
     return -1;
   }
-  printf("Os recursos estão sendo alocados...\n");
+  printf("Resources are being allocated...\n");
 
   if (enoughtoalloccase(request) == -1)
   {
-    printf("Recursos insuficientes.\n");
+    printf("Not enough Resources.\n");
     return -1;
   }
 
-  // tirando da NeedMatrix e colocando na allocMatriz
-  // removendo recurso da avail[] em cada loop
   for (i = 0; i < M; ++i)
   {
     NeedMatrix[pID][i] -= request[i];
     allocmatrix[pID][i] += request[i];
     avail[i] -= request[i];
   }
-  printf("Verificando se o estado é seguro...\n");
+  printf("Checking is the state is safe...\n");
 
   if (safemodecase() == 0)
   {
-    printf("Estado seguro ✅ Recursos Alocados.\n");
+    printf("\nx========================x\n|Safe Mode. Resources Allocated|\nx=========================x\n");
+    printf("\nAuthor:@Abhishek Sharma\n");
+
     exit(1);
     return 0;
   }
   else
   {
-    printf("Estado inseguro❗.\n");
+    printf("\nx=====================x\n|State is not safe.          |\nx=====================x\n");
+    printf("\nAuthor:@Abhishek Sharma\n");
     exit(1);
+
     return -1;
   }
 }
 
 int relRes(int pID, int releaseVector[])
 {
+
   if (caseengoughtorel(pID, releaseVector) == -1)
   {
     printf("Not enought Resources.\n");
@@ -139,12 +131,13 @@ int relRes(int pID, int releaseVector[])
   printf("Released.\nMetrix Available:\n");
   showavail();
   printf("Metrix Allocated:\n");
-  showalloc();
+  Showalloc();
+  printf("Metrix Need:\n");
+  ShowNeed();
   return 0;
 }
 
-// Funções para validação dos recursos
-
+// Funções de verificação
 int caseengoughtorel(int pID, int releaseVector[])
 {
   for (i = 0; i < M; ++i)
@@ -161,7 +154,6 @@ int caseengoughtorel(int pID, int releaseVector[])
   return 0;
 }
 
-// Caso request seja maior que needMatrrix
 int casegreaterthanneed(int pID, int request[])
 {
 
@@ -179,7 +171,6 @@ int casegreaterthanneed(int pID, int request[])
   return 0;
 }
 
-// Caso tenhamos recusos o suficientes para serem alocados
 int enoughtoalloccase(int request[])
 {
 
@@ -198,8 +189,22 @@ int enoughtoalloccase(int request[])
 }
 
 // Funções de output
+void ShowNeed()
+{
+  for (i = 0; i < N; ++i)
+  {
+    printf("{ ");
+    for (j = 0; j < M; ++j)
+    {
+      printf("%d, ", NeedMatrix[i][j]);
+    }
+    printf("}\n");
+  }
+  printf("\n");
+  return;
+}
 
-void showalloc()
+void Showalloc()
 {
   for (i = 0; i < N; ++i)
   {
@@ -210,6 +215,7 @@ void showalloc()
     }
     printf("}\n");
   }
+  printf("\n");
   return;
 }
 
@@ -220,21 +226,22 @@ void showavail()
     printf("%d, ", avail[i]);
   }
   printf("\n");
+  printf("\n");
   return;
 }
 
 void printReqOrRelVector(int vec[])
 {
+  printf("ReqOrRelVector: \n");
   for (i = 0; i < M; ++i)
   {
-    printf("%d, reqrel", vec[i]);
+    printf("%d, ", vec[i]);
   }
   printf("\n");
   return;
 }
 
-// Função para verificação de estado
-
+// Função de estudo de estado
 int safemodecase()
 {
   int finish[N] = {0};
@@ -301,16 +308,14 @@ int safemodecase()
 
 int main()
 {
-  printf("Digite o vetor de recursos disponíveis\n");
+  printf("Insira o vetor de recursos disponíveis\n");
 
   for (i = 0; i < M; i++)
   {
 
-    scanf("%d", &init[i]);
-    avail[i] = init[i];
+    scanf("%d", &avail[i]);
   }
-
-  printf("Insira a matriz de alocação\n");
+  printf("Insira a matriz de recursos já alocados\n");
   for (i = 0; i < N; i++)
   {
 
@@ -331,7 +336,7 @@ int main()
     }
   }
 
-  //NeedMatrix matrix ko initialize karna
+  // Definindo valores da NeedMatrix
   for (i = 0; i < N; ++i)
   {
     for (j = 0; j < M; ++j)
@@ -343,8 +348,11 @@ int main()
   printf("Vetor de recursos disponíveis:\n");
   showavail();
 
-  printf("Matriz de alocação:\n");
-  showalloc();
+  printf("Matriz de recursos alocados:\n");
+  Showalloc();
+
+  printf("Matriz máxima:\n");
+  ShowNeed();
 
   pthread_mutex_init(&mutex, NULL);
   pthread_attr_t attrDefault;
