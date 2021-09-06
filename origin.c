@@ -21,19 +21,21 @@ void *procs(void *procsID)
 {
   int pID = *(int *)procsID;
   int c = 0;
-  while (c < 3)
+  while (c < 2)
   {
+    printf("c: %d\n", c);
     //generate random requests
     sleep(1);
     int request[M];
     pthread_mutex_lock(&mutex);
 
-    //NeedMatrix vector ko initialize karna
+    //initialize requestVector using rand()
     for (i = 0; i < M; i++)
     {
       if (NeedMatrix[pID][i] != 0)
       {
-        request[i] = rand() % NeedMatrix[pID][i];
+        request[i] = NeedMatrix[pID][i];
+        // request[i] = rand() % NeedMatrix[pID][i];
       }
       else
       {
@@ -41,18 +43,19 @@ void *procs(void *procsID)
       }
     }
 
+    printf("\nCustomer %d Requesting Resources:\n", pID);
     printReqOrRelVector(request);
 
     getRes(pID, request);
 
     pthread_mutex_unlock(&mutex);
 
-    //random release vector gernerate karne ke liye
+    //release random number of resources
     sleep(1);
     int releaseVector[M];
     pthread_mutex_lock(&mutex);
 
-    //release vector ko initialize karna
+    //initialize releaseVector using rand()
     for (i = 0; i < M; i++)
     {
       if (allocmatrix[pID][i] != 0)
@@ -73,8 +76,10 @@ void *procs(void *procsID)
   }
 }
 
+// allocate resources for a process
 int getRes(int pID, int request[])
 {
+  // whether request number of resources is greater than needed
   if (casegreaterthanneed(pID, request) == -1)
   {
     printf("Number of requested Resources is more than Needed.\n");
@@ -88,6 +93,7 @@ int getRes(int pID, int request[])
     return -1;
   }
 
+  //pretend allocated
   for (i = 0; i < M; ++i)
   {
     NeedMatrix[pID][i] -= request[i];
@@ -99,7 +105,6 @@ int getRes(int pID, int request[])
   if (safemodecase() == 0)
   {
     printf("\nx========================x\n|Safe Mode. Resources Allocated|\nx=========================x\n");
-    printf("\nAuthor:@Abhishek Sharma\n");
 
     exit(1);
     return 0;
@@ -107,7 +112,6 @@ int getRes(int pID, int request[])
   else
   {
     printf("\nx=====================x\n|State is not safe.          |\nx=====================x\n");
-    printf("\nAuthor:@Abhishek Sharma\n");
     exit(1);
 
     return -1;
@@ -232,13 +236,13 @@ void showavail()
 
 void printReqOrRelVector(int vec[])
 {
-  printf("ReqOrRelVector: \n");
+  printf("ReqOrRelVector: [");
   for (i = 0; i < M; ++i)
   {
     printf("%d, ", vec[i]);
   }
-  printf("\n");
-  return;
+  printf("]\n");
+  return; 
 }
 
 // Função de estudo de estado
