@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#define M 2 // numero de recursos
-#define N 2 // numero de processos
+// #define M 2 // numero de recursos
+// #define N 2 // numero de processos
+
+#define NumDeRecursos 2 // numero de recursos
+#define NumDeProcess 2 // numero de processos
 
 // Variáveis globais
 int i = 0;
@@ -11,10 +14,10 @@ int j = 0;
 pthread_mutex_t mutex;
 
 // Matrizes e vetores do algoritmo
-int avail[M];
-int allocmatrix[N][M];
-int MaxMatrix[N][M];
-int NeedMatrix[N][M];
+int avail[NumDeRecursos];
+int allocmatrix[NumDeProcess][NumDeRecursos];
+int MaxMatrix[NumDeProcess][NumDeRecursos];
+int NeedMatrix[NumDeProcess][NumDeRecursos];
 
 // Thread
 void *procs(void *procsID)
@@ -23,14 +26,13 @@ void *procs(void *procsID)
   int c = 0;
   while (c < 2)
   {
-    printf("c: %d\n", c);
     //generate random requests
     sleep(1);
-    int request[M];
+    int request[NumDeRecursos];
     pthread_mutex_lock(&mutex);
 
     //initialize requestVector using rand()
-    for (i = 0; i < M; i++)
+    for (i = 0; i < NumDeRecursos; i++)
     {
       if (NeedMatrix[pID][i] != 0)
       {
@@ -52,11 +54,11 @@ void *procs(void *procsID)
 
     //release random number of resources
     sleep(1);
-    int releaseVector[M];
+    int releaseVector[NumDeRecursos];
     pthread_mutex_lock(&mutex);
 
     //initialize releaseVector using rand()
-    for (i = 0; i < M; i++)
+    for (i = 0; i < NumDeRecursos; i++)
     {
       if (allocmatrix[pID][i] != 0)
       {
@@ -94,7 +96,7 @@ int getRes(int pID, int request[])
   }
 
   //pretend allocated
-  for (i = 0; i < M; ++i)
+  for (i = 0; i < NumDeRecursos; ++i)
   {
     NeedMatrix[pID][i] -= request[i];
     allocmatrix[pID][i] += request[i];
@@ -106,13 +108,20 @@ int getRes(int pID, int request[])
   {
     printf("\nx========================x\n|Safe Mode. Resources Allocated|\nx=========================x\n");
 
-    exit(1);
+    // exit(1);
     return 0;
   }
   else
   {
+    // Retirando alterações
+    for (i = 0; i < NumDeRecursos; ++i)
+    {
+      NeedMatrix[pID][i] += request[i];
+      allocmatrix[pID][i] -= request[i];
+      avail[i] += request[i];
+    }
     printf("\nx=====================x\n|State is not safe.          |\nx=====================x\n");
-    exit(1);
+    // exit(1);
 
     return -1;
   }
@@ -126,7 +135,7 @@ int relRes(int pID, int releaseVector[])
     printf("Not enought Resources.\n");
     return -1;
   }
-  for (i = 0; i < M; i++)
+  for (i = 0; i < NumDeRecursos; i++)
   {
     allocmatrix[pID][i] -= releaseVector[i];
     NeedMatrix[pID][i] += releaseVector[i];
@@ -144,7 +153,7 @@ int relRes(int pID, int releaseVector[])
 // Funções de verificação
 int caseengoughtorel(int pID, int releaseVector[])
 {
-  for (i = 0; i < M; ++i)
+  for (i = 0; i < NumDeRecursos; ++i)
   {
     if (releaseVector[i] <= allocmatrix[pID][i])
     {
@@ -161,7 +170,7 @@ int caseengoughtorel(int pID, int releaseVector[])
 int casegreaterthanneed(int pID, int request[])
 {
 
-  for (i = 0; i < M; ++i)
+  for (i = 0; i < NumDeRecursos; ++i)
   {
     if (request[i] <= NeedMatrix[pID][i])
     {
@@ -178,7 +187,7 @@ int casegreaterthanneed(int pID, int request[])
 int enoughtoalloccase(int request[])
 {
 
-  for (i = 0; i < M; ++i)
+  for (i = 0; i < NumDeRecursos; ++i)
   {
     if (request[i] <= avail[i])
     {
@@ -195,10 +204,10 @@ int enoughtoalloccase(int request[])
 // Funções de output
 void ShowNeed()
 {
-  for (i = 0; i < N; ++i)
+  for (i = 0; i < NumDeProcess; ++i)
   {
     printf("{ ");
-    for (j = 0; j < M; ++j)
+    for (j = 0; j < NumDeRecursos; ++j)
     {
       printf("%d, ", NeedMatrix[i][j]);
     }
@@ -210,10 +219,10 @@ void ShowNeed()
 
 void Showalloc()
 {
-  for (i = 0; i < N; ++i)
+  for (i = 0; i < NumDeProcess; ++i)
   {
     printf("{ ");
-    for (j = 0; j < M; ++j)
+    for (j = 0; j < NumDeRecursos; ++j)
     {
       printf("%d, ", allocmatrix[i][j]);
     }
@@ -225,7 +234,7 @@ void Showalloc()
 
 void showavail()
 {
-  for (i = 0; i < M; ++i)
+  for (i = 0; i < NumDeRecursos; ++i)
   {
     printf("%d, ", avail[i]);
   }
@@ -237,39 +246,40 @@ void showavail()
 void printReqOrRelVector(int vec[])
 {
   printf("ReqOrRelVector: [");
-  for (i = 0; i < M; ++i)
+  for (i = 0; i < NumDeRecursos; ++i)
   {
     printf("%d, ", vec[i]);
   }
   printf("]\n");
-  return; 
+  return;
 }
 
 // Função de estudo de estado
+// Checa se uma sequência segura existe caso ocorra uma alocaçao de recursos.
 int safemodecase()
 {
-  int finish[N] = {0};
-  int work[M];
+  int finish[NumDeProcess] = {0};
+  int work[NumDeRecursos]; // Vetor temporário de recursos
 
-  for (i = 0; i < M; i++)
+  for (i = 0; i < NumDeRecursos; i++)
   {
     work[i] = avail[i];
   }
 
   int k;
-  for (i = 0; i < N; i++)
+  for (i = 0; i < NumDeProcess; i++)
   {
     if (finish[i] == 0)
     {
-      for (j = 0; j < M; j++)
+      for (j = 0; j < NumDeRecursos; j++)
       {
         if (NeedMatrix[i][j] <= work[j])
         {
 
-          if (j == M - 1)
+          if (j == NumDeRecursos - 1)
           {
             finish[i] = 1;
-            for (k = 0; k < M; ++k)
+            for (k = 0; k < NumDeRecursos; ++k)
             {
               work[k] += allocmatrix[i][k];
             }
@@ -294,7 +304,7 @@ int safemodecase()
     }
   }
 
-  for (i = 0; i < N; i++)
+  for (i = 0; i < NumDeProcess; i++)
   {
     if (finish[i] == 0)
     {
@@ -314,26 +324,26 @@ int main()
 {
   printf("Insira o vetor de recursos disponíveis\n");
 
-  for (i = 0; i < M; i++)
+  for (i = 0; i < NumDeRecursos; i++)
   {
 
     scanf("%d", &avail[i]);
   }
   printf("Insira a matriz de recursos já alocados\n");
-  for (i = 0; i < N; i++)
+  for (i = 0; i < NumDeProcess; i++)
   {
 
-    for (j = 0; j < M; j++)
+    for (j = 0; j < NumDeRecursos; j++)
     {
 
       scanf("%d", &allocmatrix[i][j]);
     }
   }
   printf("Insira a matriz máxima\n");
-  for (i = 0; i < N; i++)
+  for (i = 0; i < NumDeProcess; i++)
   {
 
-    for (j = 0; j < M; j++)
+    for (j = 0; j < NumDeRecursos; j++)
     {
 
       scanf("%d", &MaxMatrix[i][j]);
@@ -341,9 +351,9 @@ int main()
   }
 
   // Definindo valores da NeedMatrix
-  for (i = 0; i < N; ++i)
+  for (i = 0; i < NumDeProcess; ++i)
   {
-    for (j = 0; j < M; ++j)
+    for (j = 0; j < NumDeRecursos; ++j)
     {
       NeedMatrix[i][j] = MaxMatrix[i][j] - allocmatrix[i][j];
     }
@@ -361,19 +371,19 @@ int main()
   pthread_mutex_init(&mutex, NULL);
   pthread_attr_t attrDefault;
   pthread_attr_init(&attrDefault);
-  pthread_t *tid = malloc(sizeof(pthread_t) * N);
+  pthread_t *tid = malloc(sizeof(pthread_t) * NumDeProcess);
 
-  int *pid = malloc(sizeof(int) * N); // process ID
+  int *pid = malloc(sizeof(int) * NumDeProcess); // process ID
 
   //initialize pid and create pthreads
-  for (i = 0; i < N; i++)
+  for (i = 0; i < NumDeProcess; i++)
   {
     *(pid + i) = i;
     pthread_create((tid + i), &attrDefault, procs, (pid + i));
   }
 
   //join threads
-  for (i = 0; i < N; i++)
+  for (i = 0; i < NumDeProcess; i++)
   {
     pthread_join(*(tid + i), NULL);
   }
