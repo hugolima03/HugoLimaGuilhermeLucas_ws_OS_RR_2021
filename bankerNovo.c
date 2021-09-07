@@ -1,11 +1,9 @@
-// A Multithreaded Program that implements the banker's algorithm.
-
-#include <stdio.h>   // funções de entrada/saída
-#include <stdlib.h>  // funções de uso geral
-#include <unistd.h>  // acesso a ficheiros e diretorios
-#include <pthread.h> // funções de padrão POSIX (threads)
-#include <stdbool.h> // boolean type
-#include <time.h>    // funções de tempo
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <stdbool.h>
+#include <time.h>
 
 int nResources, nProcesses;
 int *resources;  //Ponteiro pros recursos
@@ -27,36 +25,38 @@ int main(int argc, char **argv)
 {
   srand(time(NULL));
 
-  printf("\nNumber of processes? "); //
+  printf("\nDigite o número de processos "); //
   scanf("%d", &nProcesses);
-  printf("\nNumber of resources? ");
+
+  printf("\nDigite o número de recursos ");
   scanf("%d", &nResources);
   //aloca memória pros recursos terem um endereço
+  //Estrutura do malloc
+  //Ponteiro = (tipo do parse)malloc()
+  resources = (int *)malloc(nResources * sizeof(*resources)); //resourcees = PONTEIRO
 
-  resources = (int *)malloc(nResources * sizeof(*resources));
-  printf("\nCurrently Available resources (R1 R2 ...)? ");   
+  printf("\nInsira o vetor de recursos disponíveis (R1 R2 ...)? "); //nResources = INT
   for (int i = 0; i < nResources; i++)
   {
     scanf("%d", &resources[i]);
   }
-
   allocated = (int **)malloc(nProcesses * sizeof(*allocated));
+
   for (int i = 0; i < nProcesses; i++)
   {
     allocated[i] = (int *)malloc(nResources * sizeof(**allocated));
   }
-
   maxRequired = (int **)malloc(nProcesses * sizeof(*maxRequired));
+
   for (int i = 0; i < nProcesses; i++)
   {
     maxRequired[i] = (int *)malloc(nResources * sizeof(**maxRequired));
   }
-
   // allocated
   printf("\n");
   for (int i = 0; i < nProcesses; i++)
   {
-    printf("\nResource allocated to process %d (R1 R2 ...)? ", i + 1);
+    printf("\nNúmero de recursos alocados ao processo %d (R1 R2 ...) ", i + 1);
     for (int j = 0; j < nResources; j++)
     {
       scanf("%d", &allocated[i][j]);
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
   // maximum required resources
   for (int i = 0; i < nProcesses; i++)
   {
-    printf("\nMaximum resource required by process %d (R1 R2 ...)? ", i + 1);
+    printf("\nMáximo de recursos solicitados pelo processo %d (R1 R2 ...) ", i + 1);
     for (int j = 0; j < nResources; j++)
     {
       scanf("%d", &maxRequired[i][j]);
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
   }
   printf("\n");
 
-  // calculate need matrix
+  // Criando NeedMatriz
   need = (int **)malloc(nProcesses * sizeof(*need));
   for (int i = 0; i < nProcesses; i++)
   {
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     }
   }
 
-  // get safe sequence
+  // Gerando sequência segura
   safeSeq = (int *)malloc(nProcesses * sizeof(*safeSeq));
   for (int i = 0; i < nProcesses; i++)
   {
@@ -99,20 +99,20 @@ int main(int argc, char **argv)
 
   if (!getSafeSeq())
   {
-    printf("\nUnsafe State! The processes leads the system to a unsafe state.\n\n");
+    printf("\nEstado inseguro!\n\n");
     exit(-1);
   }
 
-  printf("\n\nSafe Sequence Found : ");
+  printf("\n\nSequencia segura encontrada : ");
   for (int i = 0; i < nProcesses; i++)
   {
     printf("%-3d", safeSeq[i] + 1);
   }
 
-  printf("\nExecuting Processes...\n\n");
+  printf("\nExecutando processos...\n\n");
   sleep(1);
 
-  // setup de threads
+  // setup das threads
   pthread_t processes[nProcesses];
   pthread_attr_t attr;
   pthread_attr_init(&attr);
@@ -133,9 +133,9 @@ int main(int argc, char **argv)
     pthread_join(processes[i], NULL);
   }
 
-  printf("\nAll Processes Finished\n");
+  printf("\nTodos os processos foram finalizados\n");
 
-  // free resources
+  // liberação dos recursos utilizados
   free(resources);
   for (int i = 0; i < nProcesses; i++)
   {
@@ -224,20 +224,20 @@ void *processCode(void *arg)
   }
 
   // process
-  printf("\n--> Process %d", p + 1);
-  printf("\n\tAllocated : ");
+  printf("\n--> Processos %d", p + 1);
+  printf("\n\tRecursos alocados : ");
   for (int i = 0; i < nResources; i++)
   {
     printf("%3d", allocated[p][i]);
   }
 
-  printf("\n\tNeeded    : ");
+  printf("\n\tRecursos necessários    : ");
   for (int i = 0; i < nResources; i++)
   {
     printf("%3d", need[p][i]);
   }
 
-  printf("\n\tAvailable : ");
+  printf("\n\tVetor de recursos disponíveis : ");
   for (int i = 0; i < nResources; i++)
   {
     printf("%3d", resources[i]);
@@ -246,7 +246,7 @@ void *processCode(void *arg)
   printf("\n");
   sleep(1);
 
-  printf("\tResource Allocated!");
+  printf("\tRecursos alocados!");
   printf("\n");
   sleep(1);
 
@@ -257,19 +257,16 @@ void *processCode(void *arg)
   printf("\tProcess Code Completed...");
   printf("\n");
   sleep(1);
-
-  printf("\tProcess Releasing Resource...");
+  printf("\tDesalocando recursos...");
   printf("\n");
   sleep(1);
-
-  printf("\tResource Released!");
-
+  printf("\tRecursos liberados!");
   for (int i = 0; i < nResources; i++)
   {
     resources[i] += allocated[p][i];
   }
 
-  printf("\n\tNow Available : ");
+  printf("\n\tDisponível : ");
   for (int i = 0; i < nResources; i++)
   {
     printf("%3d", resources[i]);
