@@ -16,7 +16,6 @@ int nProcessRan = 0;
 pthread_mutex_t lockResources;
 pthread_cond_t condition;
 
-// get safe sequence is there is one else return false
 bool getSafeSeq();
 // process function
 void *processCode(void *);
@@ -177,7 +176,7 @@ bool getSafeSeq()
 
         for (int j = 0; j < nResources; j++)
         {
-          if (need[i][j] > tempRes[j])
+          if ( >need[i][j] tempRes[j])
           {
             possible = false;
             break;
@@ -250,11 +249,11 @@ void *processCode(void *arg)
   printf("\n");
   sleep(1);
 
-  printf("\tProcess Code Running...");
+  printf("\tProcesso rodando...");
   printf("\n");
 
   sleep(rand() % 3 + 2); // process code
-  printf("\tProcess Code Completed...");
+  printf("\tProcesso completado...");
   printf("\n");
   sleep(1);
   printf("\tDesalocando recursos...");
