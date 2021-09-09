@@ -40,14 +40,14 @@ int main(int argc, char **argv)
   {
     scanf("%d", &resources[i]);
   }
+  
   allocated = (int **)malloc(nProcesses * sizeof(*allocated));
-
   for (int i = 0; i < nProcesses; i++)
   {
     allocated[i] = (int *)malloc(nResources * sizeof(**allocated));
   }
+  
   maxRequired = (int **)malloc(nProcesses * sizeof(*maxRequired));
-
   for (int i = 0; i < nProcesses; i++)
   {
     maxRequired[i] = (int *)malloc(nResources * sizeof(**maxRequired));
@@ -250,11 +250,11 @@ void *processCode(void *arg)
   printf("\n");
   sleep(1);
 
-  printf("\tProcess Code Running...");
+  printf("\tProcesso rodando...");
   printf("\n");
 
   sleep(rand() % 3 + 2); // process code
-  printf("\tProcess Code Completed...");
+  printf("\tProcesso completado...");
   printf("\n");
   sleep(1);
   printf("\tDesalocando recursos...");
